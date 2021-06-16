@@ -100,7 +100,13 @@ class UniversalDependenciesDatasetReader(DatasetReader):
             if field:
                 fields[name] = SequenceLabelField(field, tokens, label_namespace=name)
 
-        if dependencies is not None:
+        use_dep = False
+        for dep in dependencies:
+            for d in dep:
+                if d != "_":
+                    use_dep = True
+                    break
+        if use_dep:
             # We don't want to expand the label namespace with an additional dummy token, so we'll
             # always give the 'ROOT_HEAD' token a label of 'root'.
             fields["head_tags"] = SequenceLabelField([x[0] for x in dependencies],
