@@ -40,7 +40,21 @@ if not log_dir_name:
     file_name = args.config[0] if args.config else args.base_config
     log_dir_name = os.path.basename(file_name).split(".")[0]
 
-if not args.name == "multilingual":
+if args.name == "bosque_dante":
+    train_file = "train.conllu"
+    train_path = os.path.join(args.dataset_dir, "bosque_dante", train_file)
+    treebank_path = os.path.dirname(train_path)
+    if train_path:
+        logger.info(f"found training file: {train_path}, calculating the warmup and start steps")
+
+        f = open(train_path, 'r', encoding="utf-8")
+        sentence_count = 0
+        for line in f.readlines():
+            if line.isspace():
+                sentence_count += 1
+        num_warmup_steps = round(sentence_count / args.batch_size)
+
+elif not args.name == "multilingual":
     train_file = args.name + "-ud-train.conllu"
     pathname = os.path.join(args.dataset_dir, "*", train_file)
     train_path = glob.glob(pathname).pop()
@@ -79,12 +93,20 @@ train_params = util.merge_configs(configs)
 if not args.name == "multilingual":
     # overwrite the default params with the language-specific ones
     for param in train_params:
-        if param == "train_data_path":
-            train_params["train_data_path"] = os.path.join(treebank_path, f"{args.name}-ud-train.conllu")
-        if param == "validation_data_path":
-            train_params["validation_data_path"] = os.path.join(treebank_path, f"{args.name}-ud-dev.conllu")
-        if param == "test_data_path":
-            train_params["test_data_path"] = os.path.join(treebank_path, f"{args.name}-ud-test.conllu")
+        if args.name == "bosque_dante":
+            if param == "train_data_path":
+                train_params["train_data_path"] = os.path.join(treebank_path, "train.conllu")
+            if param == "validation_data_path":
+                train_params["validation_data_path"] = os.path.join(treebank_path, "dante_01_test.conllu")
+            if param == "test_data_path":
+                train_params["test_data_path"] = os.path.join(treebank_path, "dante_01_test.conllu")
+        else:
+            if param == "train_data_path":
+                train_params["train_data_path"] = os.path.join(treebank_path, f"{args.name}-ud-train.conllu")
+            if param == "validation_data_path":
+                train_params["validation_data_path"] = os.path.join(treebank_path, f"{args.name}-ud-dev.conllu")
+            if param == "test_data_path":
+                train_params["test_data_path"] = os.path.join(treebank_path, f"{args.name}-ud-test.conllu")
         
         if param == "vocabulary":
             train_params["vocabulary"]["directory_path"] = f"data/vocab/{args.name}/vocabulary"
