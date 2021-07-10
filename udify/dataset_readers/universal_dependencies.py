@@ -106,6 +106,7 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                 if d != "_":
                     use_dep = True
                     break
+        use_dep = False
         if use_dep:
             # We don't want to expand the label namespace with an additional dummy token, so we'll
             # always give the 'ROOT_HEAD' token a label of 'root'.
